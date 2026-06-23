@@ -43,13 +43,23 @@ val init : t -> string -> unit
 (** Evaluate JS in the current page. *)
 val eval : t -> string -> unit
 
-(** [bind w name f] exposes a JS function [window.name(...)] that calls back
-    into [f id req], where [req] is a JSON array string of the JS arguments.
-    The callback must eventually answer with {!return} (using [id]).
+(** Raise this from a {!bind} callback to reject the JS promise with [msg]. *)
+exception Webview_error of string
 
-    The closure is kept alive as a GC root for the lifetime of the process. *)
-val bind : t -> string -> (string -> string -> unit) -> unit
+(** [bind w name f] exposes a JS function [window.name(...)]. The arguments
+    passed from JS are decoded as a JSON array and handed to [f] as a list of
+    {!Yojson.Safe.t} values; the value [f] returns is serialized back to
+    resolve the JS promise.
 
-(** [return w id ~error ~result] resolves (or rejects, if [error]) the JS
+    Raising {!Webview_error} (or any exception) rejects the promise instead.
+    The callback is kept alive as a GC root for the lifetime of the process. *)
+val bind : t -> string -> (Yojson.Safe.t list -> Yojson.Safe.t) -> unit
+
+(** Lower-level variant of {!bind} working on raw strings: [f id req] receives
+    the call id and the raw JSON array string, and is responsible for calling
+    {!return_raw} itself (possibly later, for async results). *)
+val bind_raw : t -> string -> (string -> string -> unit) -> unit
+
+(** [return_raw w id ~error ~result] resolves (or rejects, if [error]) the JS
     promise associated with the call [id]. [result] must be a JSON value. *)
-val return : t -> string -> error:bool -> result:string -> unit
+val return_raw : t -> string -> error:bool -> result:string -> unit

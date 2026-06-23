@@ -22,12 +22,34 @@ external set_html : t -> string -> unit = "ocaml_webview_set_html"
 external init : t -> string -> unit = "ocaml_webview_init"
 external eval : t -> string -> unit = "ocaml_webview_eval"
 
-external bind : t -> string -> (string -> string -> unit) -> unit
+external bind_raw : t -> string -> (string -> string -> unit) -> unit
   = "ocaml_webview_bind"
 
 external _return : t -> string -> int -> string -> unit
   = "ocaml_webview_return"
 
+exception Webview_error of string
+
 let create ?(debug = false) () = _create debug
 let set_size w ~width ~height hint = _set_size w width height hint
-let return w id ~error ~result = _return w id (if error then 1 else 0) result
+let return_raw w id ~error ~result = _return w id (if error then 1 else 0) result
+
+let bind w name f =
+  bind_raw w name (fun id req ->
+      let result =
+        try
+          let args =
+            match Yojson.Safe.from_string req with
+            | `List args -> args
+            | json -> [ json ] (* webview always sends an array; be lenient *)
+          in
+          Ok (f args)
+        with
+        | Webview_error msg -> Error (`String msg)
+        | exn -> Error (`String (Printexc.to_string exn))
+      in
+      match result with
+      | Ok json ->
+          return_raw w id ~error:false ~result:(Yojson.Safe.to_string json)
+      | Error json ->
+          return_raw w id ~error:true ~result:(Yojson.Safe.to_string json))

@@ -51,7 +51,6 @@ pkg-config --cflags --libs gtk+-3.0 webkit2gtk-4.1
 
 ## Ideas for going further
 
-- Integrate `yojson` to cleanly (de)serialize `req`/`result`.
 - Implement `unbind` + free the `ocaml_binding` (map `name -> cell`).
 - Discover flags via `dune-configurator` (programmatic pkg-config).
 - Migrate to the recent webview API (`webview_error_t` error codes).

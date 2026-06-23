@@ -1,57 +1,57 @@
 # owebview
 
-Squelette de binding OCaml pour la librairie [webview](https://github.com/webview/webview).
+OCaml binding skeleton for the [webview](https://github.com/webview/webview) library.
 
-> ⚠️ Point de départ, pas une lib complète. Il manque volontairement : `unbind`,
-> `dispatch`, `get_window`, la gestion de la mémoire des bindings, et le support
-> multi-plateforme du linking (cf. `lib/dune`).
+> ⚠️ A starting point, not a complete library. Intentionally missing: `unbind`,
+> `dispatch`, `get_window`, binding memory management, and cross-platform
+> linking support (see `lib/dune`).
 
 ## Architecture
 
-| Fichier | Rôle |
+| File | Role |
 |---|---|
-| `lib/webview.mli` / `.ml` | API OCaml + déclarations `external` |
-| `lib/webview_stubs.cpp` | Glue C ↔ OCaml (lock runtime, GC roots des callbacks) |
-| `lib/dune` | Compile le stub C++ et linke les libs natives |
-| `examples/hello.ml` | Fenêtre minimale avec un binding JS → OCaml |
-| `scripts/fetch-webview.sh` | Récupère un `webview.h` compatible dans `vendor/` |
+| `lib/webview.mli` / `.ml` | OCaml API + `external` declarations |
+| `lib/webview_stubs.cpp` | C ↔ OCaml glue (runtime lock, GC roots for callbacks) |
+| `lib/dune` | Compiles the C++ stub and links the native libraries |
+| `examples/hello.ml` | Minimal window with a JS → OCaml binding |
+| `scripts/fetch-webview.sh` | Fetches a compatible `webview.h` into `vendor/` |
 
-L'implémentation choisit des **stubs C manuels** plutôt que `ctypes` afin de
-montrer explicitement les deux points sensibles :
+The implementation deliberately uses **manual C stubs** rather than `ctypes`,
+in order to make the two sensitive points explicit:
 
-1. **`webview_run` est bloquant** → `caml_release_runtime_system()` autour de
-   l'appel, et `caml_acquire_runtime_system()` à l'entrée de chaque callback.
-2. **Survie des closures** → chaque closure passée à `bind` est enregistrée via
-   `caml_register_generational_global_root` pour ne pas être collectée.
+1. **`webview_run` is blocking** → `caml_release_runtime_system()` around the
+   call, and `caml_acquire_runtime_system()` at the entry of each callback.
+2. **Closure survival** → each closure passed to `bind` is registered via
+   `caml_register_generational_global_root` so it is not collected.
 
-## Prérequis
+## Requirements
 
 - OCaml + dune (`opam install dune`)
-- Un compilateur C++
-- Les dépendances natives :
-  - **macOS** : WebKit / Cocoa (fournis par le système)
-  - **Linux** : `gtk+-3.0` + `webkit2gtk-4.1` (paquets `-dev`)
-  - **Windows** : WebView2 (non couvert par ce squelette)
+- A C++ compiler
+- The native dependencies:
+  - **macOS**: WebKit / Cocoa (provided by the system)
+  - **Linux**: `gtk+-3.0` + `webkit2gtk-4.1` (`-dev` packages)
+  - **Windows**: WebView2 (not covered by this skeleton)
 
 ## Build & run
 
 ```sh
-# 1. Vendorer le header (version single-header compatible)
+# 1. Vendor the header (compatible single-header version)
 ./scripts/fetch-webview.sh
 
-# 2. Compiler et lancer l'exemple
+# 2. Build and run the example
 dune exec examples/hello.exe
 ```
 
-Sur **Linux**, remplacer la ligne `c_library_flags` de `lib/dune` par la sortie de :
+On **Linux**, replace the `c_library_flags` line in `lib/dune` with the output of:
 
 ```sh
 pkg-config --cflags --libs gtk+-3.0 webkit2gtk-4.1
 ```
 
-## Pistes pour aller plus loin
+## Ideas for going further
 
-- Intégrer `yojson` pour (dé)sérialiser proprement `req`/`result`.
-- Implémenter `unbind` + libérer les `ocaml_binding` (map `name -> cell`).
-- Découverte des flags via `dune-configurator` (pkg-config programmatique).
-- Migrer vers l'API webview récente (codes d'erreur `webview_error_t`).
+- Integrate `yojson` to cleanly (de)serialize `req`/`result`.
+- Implement `unbind` + free the `ocaml_binding` (map `name -> cell`).
+- Discover flags via `dune-configurator` (programmatic pkg-config).
+- Migrate to the recent webview API (`webview_error_t` error codes).

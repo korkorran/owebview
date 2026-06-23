@@ -1,0 +1,22 @@
+(library
+ (name webview)
+ (foreign_stubs
+  (language cxx)
+  (names webview_stubs)
+  ; extra_deps forces dune to copy the vendored header into the build tree so
+  ; the -I below (build-relative) can find it. See scripts/fetch-webview.sh.
+  (extra_deps %{workspace_root}/vendor/webview.h)
+  (flags
+   (:standard
+    -I
+    ../vendor
+    -std=c++11)))
+ ; --- Linking flags are platform specific ---
+ ; macOS (current default below):
+ (c_library_flags
+  (-lc++ -lobjc -framework WebKit -framework Cocoa))
+ ; Linux: replace the line above with the GTK/WebKitGTK flags, e.g.
+ ;   (c_library_flags (:standard %{read-lines:linux-flags.sexp}))
+ ; or, more simply, generate them from pkg-config:
+ ;   pkg-config --libs gtk+-3.0 webkit2gtk-4.1
+ )

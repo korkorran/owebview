@@ -13,6 +13,12 @@ let () =
       in
       Webview.return w id ~error:false ~result);
 
+  (* Expose window.os_type() to JS. Returns the host OS as a JSON string. *)
+  Webview.bind w "os_type" (fun id req ->
+      Printf.printf "binding called: id=%s req=%s\n%!" id req;
+      let result = Printf.sprintf "%S" (Utils.detect_os ()) in
+      Webview.return w id ~error:false ~result);
+
   Webview.set_html w
     {|<!doctype html>
 <html>
@@ -20,6 +26,9 @@ let () =
     <h2>owebview</h2>
     <button onclick="add(20, 22).then(r => document.querySelector('#out').textContent = r)">
       add(20, 22)
+    </button>
+    <button onclick="os_type().then(r => document.querySelector('#out').textContent = r)">
+      OS type
     </button>
     <pre id="out"></pre>
   </body>

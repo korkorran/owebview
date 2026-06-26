@@ -1,3 +1,17 @@
 (executable
  (name hello)
+ (public_name hello)
+ (package owebview)
  (libraries webview unix))
+
+; Install the web/ assets under <prefix>/share/owebview/web/ so an installed
+; binary can find them next to itself (see web_dir in hello.ml). The explicit
+; `as` paths preserve the web/ subdirectory and keep the files siblings, so
+; the relative <link>/<script> references in index.html keep resolving.
+(install
+ (section share)
+ (package owebview)
+ (files
+  (web/index.html as web/index.html)
+  (web/style.css as web/style.css)
+  (web/app.js as web/app.js)))

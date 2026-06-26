@@ -6,10 +6,8 @@ A small OCaml binding skeleton for the webview library
 (https://github.com/webview/webview): window creation, navigation,
 bidirectional JS <-> OCaml bindings, plus an example application.
 
-The native webview dependencies are not packaged here: on macOS they are
-provided by the system (WebKit/Cocoa); on Linux install gtk+-3.0 and
-webkit2gtk-4.1 (-dev packages). A compatible webview.h must be vendored
-first with scripts/fetch-webview.sh."""
+On macOS the native dependencies (WebKit/Cocoa) are provided by the system;
+on Linux they are declared as depexts (gtk+-3.0 and webkit2gtk-4.1) for common distributions."""
 maintainer: ["frederic.ln.lang@gmail.com"]
 authors: ["Frédéric Lang"]
 license: "MIT"
@@ -35,3 +33,9 @@ build: [
   ]
 ]
 dev-repo: "git+https://github.com/korkorran/owebview.git"
+depexts: [
+  ["libgtk-3-dev" "libwebkit2gtk-4.1-dev"] {os-family = "debian"}
+  ["gtk3-devel" "webkit2gtk4.1-devel"] {os-family = "fedora" | os-family = "rhel"}
+  ["gtk3" "webkit2gtk-4.1"] {os-family = "arch"}
+  ["gtk+3.0-dev" "webkit2gtk-4.1-dev"] {os-distribution = "alpine"}
+]

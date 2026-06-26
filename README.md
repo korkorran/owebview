@@ -1,85 +1,98 @@
 # owebview
 
-OCaml binding for the [webview](https://github.com/webview/webview) library.
+Build a tiny native desktop window with a web UI, straight from OCaml — powered
+by [webview](https://github.com/webview/webview).
 
-> ⚠️ A starting point, not a complete library. Intentionally missing: `unbind`,
-> `dispatch`, `get_window`, binding memory management, and cross-platform
-> linking support (see `lib/dune`).
+No Electron, no bundler: create a window, drop in some HTML, and you have an app.
+Here's the whole thing:
 
-## Architecture
+```ocaml
+let () =
+  let w = Webview.create () in
+  Webview.set_title w "My first owebview app";
+  Webview.set_size w ~width:480 ~height:320 Webview.Hint_none;
+  Webview.set_html w
+    {|<!doctype html>
+      <html>
+        <body style="font-family: system-ui; text-align: center">
+          <h1>Hello from OCaml 👋</h1>
+          <p>Rendered by webview.</p>
+        </body>
+      </html>|};
+  Webview.run w;
+  Webview.destroy w
+```
 
-| File | Role |
-|---|---|
-| `lib/webview.mli` / `.ml` | OCaml API + `external` declarations |
-| `lib/webview_stubs.cpp` | C ↔ OCaml glue (runtime lock, GC roots for callbacks) |
-| `lib/utils.ml` | Filesystem helpers (`Webview.Utils`) to locate assets |
-| `lib/dune` | Compiles the C++ stub and links the native libraries |
-| `lib/config/discover.ml` | Detects platform C++ flags at build time (dune-configurator) |
-| `examples/hellowv.ml` | Minimal window with two JS → OCaml bindings |
-| `examples/utils.ml` | Example-local helper (host OS detection) |
-| `examples/web/` | Page assets (`index.html` + `style.css` + `app.js`) |
-| `scripts/fetch-webview.sh` | Fetches a compatible `webview.h` into `vendor/` |
+## See it run (30 seconds)
 
-The implementation deliberately uses **manual C stubs** rather than `ctypes`,
-in order to make the two sensitive points explicit:
-
-1. **`webview_run` is blocking** → `caml_release_runtime_system()` around the
-   call, and `caml_acquire_runtime_system()` at the entry of each callback.
-2. **Closure survival** → each closure passed to `bind` is registered via
-   `caml_register_generational_global_root` so it is not collected.
-
-## Requirements
-
-- OCaml + dune (`opam install dune`)
-- A C++ compiler
-- The native dependencies:
-  - **macOS**: WebKit / Cocoa (provided by the system)
-  - **Linux**: `gtk+-3.0` + `webkit2gtk-4.1` (`-dev` packages)
-  - **Windows**: WebView2 (not covered by this skeleton)
-
-## Build & run
+Clone the repo and launch the bundled example, `hellowv`:
 
 ```sh
-# Build and run the example (works from any directory)
+git clone https://github.com/korkorran/owebview.git
+cd owebview
 dune exec examples/hellowv.exe
 ```
 
-The `webview.h` header is vendored in `vendor/`; run `./scripts/fetch-webview.sh`
-only to update it.
+A window pops up with two buttons wired to OCaml: one adds two numbers, the other
+reports your OS. The example loads its UI from real `.html` / `.css` / `.js`
+files in [`examples/web/`](examples/web/) — peek at
+[`examples/hellowv.ml`](examples/hellowv.ml) to see how JavaScript calls back
+into OCaml.
 
-The platform-specific C++ compile/link flags are detected automatically at
-build time by `lib/config/discover.ml` (dune-configurator): the WebKit/Cocoa
-frameworks on macOS, and the `gtk+-3.0` / `webkit2gtk-4.1` flags from
-`pkg-config` on Linux. No manual editing of `lib/dune` is needed — just make
-sure the `-dev` packages are installed on Linux (they are declared as the
-package's opam `depexts`).
+## Use it in your own project
 
-## Page assets
-
-The example does not inline its HTML in OCaml: it loads the files in
-`examples/web/` (`index.html`, which references `style.css` and `app.js`) via
-`Webview.navigate` with a `file://` URL. The OCaml bindings (`add`, `os_type`)
-stay reachable from JS as `window.<name>(...)`.
-
-The asset directory is resolved relative to the executable, so the example runs
-from any working directory:
-
-- **Dev** (`dune exec`): the files are read from the source tree.
-- **Installed**: the assets are installed under `<prefix>/share/owebview/web/`
-  and found next to the binary (`<prefix>/bin/` → `<prefix>/share/...`).
-
-## Install
+Pin the library with opam (the `webview.h` header is vendored, nothing to fetch):
 
 ```sh
-dune build @install
-dune install --prefix /path/to/prefix owebview
+opam pin add owebview https://github.com/korkorran/owebview.git
 ```
 
-This installs the `hellowv` binary into `<prefix>/bin/` and the page assets into
-`<prefix>/share/owebview/web/`, keeping them discoverable at runtime.
+Then depend on it from your `dune` file:
 
-## Ideas for going further
+```dune
+(executable
+ (name main)
+ (libraries owebview.webview))
+```
 
-- Integrate `yojson` to cleanly (de)serialize `req`/`result`.
-- Implement `unbind` + free the `ocaml_binding` (map `name -> cell`).
-- Migrate to the recent webview API (`webview_error_t` error codes).
+Drop the example above into `main.ml` and run `dune exec ./main.exe`. That's it.
+
+## A little further
+
+Once HTML rendering works, the fun part is the OCaml ↔ JavaScript bridge:
+
+```ocaml
+(* Expose window.add(a, b) to the page; the result is a JS Promise. *)
+Webview.bind w "add" (fun id req ->
+    let result =
+      match Scanf.sscanf_opt req "[%d,%d]" (fun a b -> a + b) with
+      | Some n -> string_of_int n
+      | None -> "null"
+    in
+    Webview.return w id ~error:false ~result)
+```
+
+Other handy entry points: `Webview.navigate` (load a URL or a local `file://`
+page), `Webview.init` / `Webview.eval` (inject JavaScript), and
+`Webview.terminate` (close the window from code). The full API lives in
+[`lib/webview.mli`](lib/webview.mli).
+
+## Native dependencies
+
+webview uses the system web engine, so you need its native libraries:
+
+- **macOS** — WebKit / Cocoa, already provided by the system. Nothing to install.
+- **Linux** — `gtk+-3.0` and `webkit2gtk-4.1` (the `-dev` packages). They are
+  declared as opam `depexts`, so `opam pin` will offer to install them.
+- **Windows** — not covered by this skeleton (would need WebView2).
+
+The platform-specific compile/link flags are detected automatically at build
+time (via `pkg-config` on Linux), so there's nothing to tweak by hand.
+
+> ⚠️ This is a compact binding, not a full-featured library: things like
+> `unbind`, `dispatch` and binding memory management are intentionally left out.
+> It's a great starting point to build on.
+
+## License
+
+[MIT](LICENSE).

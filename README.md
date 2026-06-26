@@ -93,6 +93,17 @@ time (via `pkg-config` on Linux), so there's nothing to tweak by hand.
 > `unbind`, `dispatch` and binding memory management are intentionally left out.
 > It's a great starting point to build on.
 
+## Contributing
+
+Feedback is very welcome! This binding is developed and tested mainly on macOS,
+so reports about building and running it on **Linux distributions** are
+especially valuable — does it compile, do the `depexts` resolve, does the
+`webkit2gtk-4.1` backend behave as expected on your distro?
+
+If you give it a try on Linux, please open an issue with your distribution,
+what worked and what didn't (build logs welcome). Pull requests improving
+cross-platform support are happily accepted.
+
 ## License
 
 [MIT](LICENSE).

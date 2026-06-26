@@ -1,19 +1,3 @@
-(* Locate the directory holding the web assets (index.html + style.css +
-   app.js), independently of the current working directory.
-
-   - Installed layout: the binary lives in [<prefix>/bin/], and the assets are
-     installed under [<prefix>/share/owebview/web/] (see examples/dune).
-   - Dev layout (dune exec): the assets are read from the source tree, located
-     relative to the executable in dune's build tree (see Webview.Utils). *)
-let web_dir () =
-  let has_index dir = Sys.file_exists (Filename.concat dir "index.html") in
-  let installed =
-    Filename.concat
-      (Filename.dirname (Webview.Utils.exe_dir ()))
-      (Filename.concat "share" (Filename.concat "owebview" "web"))
-  in
-  if has_index installed then installed
-  else Filename.concat (Webview.Utils.asset_dir ()) "web"
 
 let () =
   let w = Webview.create ~debug:true () in
@@ -40,7 +24,7 @@ let () =
      The CSS and JS referenced with relative paths in index.html are resolved
      relative to that file. We locate the web/ directory from the executable
      location, so it works both installed and from the build tree. *)
-  let index = Filename.concat (web_dir ()) "index.html" in
+  let index = Filename.concat (Webview.Utils.web_dir ()) "index.html" in
   Webview.navigate w ("file://" ^ index);
 
   Webview.run w;

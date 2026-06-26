@@ -66,4 +66,7 @@ module Utils : sig
       source directory. From an installed location the executable directory is
       used as-is. *)
   val asset_dir : unit -> string
+
+  (** Directory to resolve web assets against. This is [asset_dir]/web. *)
+  val web_dir : unit -> string
 end

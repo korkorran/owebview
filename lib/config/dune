@@ -1,0 +1,7 @@
+; Build-time program that detects the platform-specific C++ compile/link
+; flags for the webview stub and writes them to sexp files consumed by
+; ../dune. On Linux the flags come from pkg-config; on macOS they are the
+; WebKit/Cocoa system frameworks.
+(executable
+ (name discover)
+ (libraries dune-configurator))

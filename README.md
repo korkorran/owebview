@@ -14,6 +14,7 @@ OCaml binding for the [webview](https://github.com/webview/webview) library.
 | `lib/webview_stubs.cpp` | C ↔ OCaml glue (runtime lock, GC roots for callbacks) |
 | `lib/utils.ml` | Filesystem helpers (`Webview.Utils`) to locate assets |
 | `lib/dune` | Compiles the C++ stub and links the native libraries |
+| `lib/config/discover.ml` | Detects platform C++ flags at build time (dune-configurator) |
 | `examples/hello.ml` | Minimal window with two JS → OCaml bindings |
 | `examples/utils.ml` | Example-local helper (host OS detection) |
 | `examples/web/` | Page assets (`index.html` + `style.css` + `app.js`) |
@@ -39,18 +40,19 @@ in order to make the two sensitive points explicit:
 ## Build & run
 
 ```sh
-# 1. Vendor the header (compatible single-header version)
-./scripts/fetch-webview.sh
-
-# 2. Build and run the example (works from any directory)
+# Build and run the example (works from any directory)
 dune exec examples/hello.exe
 ```
 
-On **Linux**, replace the `c_library_flags` line in `lib/dune` with the output of:
+The `webview.h` header is vendored in `vendor/`; run `./scripts/fetch-webview.sh`
+only to update it.
 
-```sh
-pkg-config --cflags --libs gtk+-3.0 webkit2gtk-4.1
-```
+The platform-specific C++ compile/link flags are detected automatically at
+build time by `lib/config/discover.ml` (dune-configurator): the WebKit/Cocoa
+frameworks on macOS, and the `gtk+-3.0` / `webkit2gtk-4.1` flags from
+`pkg-config` on Linux. No manual editing of `lib/dune` is needed — just make
+sure the `-dev` packages are installed on Linux (they are declared as the
+package's opam `depexts`).
 
 ## Page assets
 
@@ -80,5 +82,4 @@ This installs the `hello` binary into `<prefix>/bin/` and the page assets into
 
 - Integrate `yojson` to cleanly (de)serialize `req`/`result`.
 - Implement `unbind` + free the `ocaml_binding` (map `name -> cell`).
-- Discover flags via `dune-configurator` (programmatic pkg-config).
 - Migrate to the recent webview API (`webview_error_t` error codes).

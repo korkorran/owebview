@@ -5,19 +5,24 @@
   (language cxx)
   (names webview_stubs)
   ; extra_deps forces dune to copy the vendored header into the build tree so
-  ; the -I below (build-relative) can find it. See scripts/fetch-webview.sh.
+  ; the -I below (build-relative) can find it.
   (extra_deps %{workspace_root}/vendor/webview.h)
+  ; -std=c++11 plus any platform cflags (e.g. GTK include paths on Linux) are
+  ; detected at build time by config/discover.exe.
   (flags
    (:standard
     -I
     ../vendor
-    -std=c++11)))
- ; --- Linking flags are platform specific ---
- ; macOS (current default below):
+    (:include c_flags.sexp))))
+ ; Link flags (WebKit/Cocoa frameworks on macOS, GTK/WebKitGTK libs on Linux)
+ ; are detected at build time too — see the rule below.
  (c_library_flags
-  (-lc++ -lobjc -framework WebKit -framework Cocoa))
- ; Linux: replace the line above with the GTK/WebKitGTK flags, e.g.
- ;   (c_library_flags (:standard %{read-lines:linux-flags.sexp}))
- ; or, more simply, generate them from pkg-config:
- ;   pkg-config --libs gtk+-3.0 webkit2gtk-4.1
- )
+  (:include c_library_flags.sexp)))
+
+; Generate the platform-specific flag files with dune-configurator.
+(rule
+ (targets c_flags.sexp c_library_flags.sexp)
+ (deps
+  (:discover config/discover.exe))
+ (action
+  (run %{discover})))

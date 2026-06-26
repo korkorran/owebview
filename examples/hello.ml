@@ -19,20 +19,12 @@ let () =
       let result = Printf.sprintf "%S" (Utils.detect_os ()) in
       Webview.return w id ~error:false ~result);
 
-  Webview.set_html w
-    {|<!doctype html>
-<html>
-  <body>
-    <h2>owebview</h2>
-    <button onclick="add(20, 22).then(r => document.querySelector('#out').textContent = r)">
-      add(20, 22)
-    </button>
-    <button onclick="os_type().then(r => document.querySelector('#out').textContent = r)">
-      OS type
-    </button>
-    <pre id="out"></pre>
-  </body>
-</html>|};
+  (* Load the page from on-disk files (examples/web/) instead of an inline
+     HTML string. The CSS and JS referenced with relative paths in index.html
+     are resolved relative to that file. Run from the repo root so the path
+     below resolves (e.g. `dune exec examples/hello.exe`). *)
+  let index = Filename.concat (Sys.getcwd ()) "examples/web/index.html" in
+  Webview.navigate w ("file://" ^ index);
 
   Webview.run w;
   Webview.destroy w

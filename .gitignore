@@ -1,4 +1,3 @@
 _build/
-vendor/webview.h
 *.install
 .merlin

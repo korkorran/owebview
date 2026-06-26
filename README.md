@@ -1,6 +1,6 @@
 # owebview
 
-OCaml binding skeleton for the [webview](https://github.com/webview/webview) library.
+OCaml binding for the [webview](https://github.com/webview/webview) library.
 
 > ⚠️ A starting point, not a complete library. Intentionally missing: `unbind`,
 > `dispatch`, `get_window`, binding memory management, and cross-platform

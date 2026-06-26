@@ -6,7 +6,7 @@ let () =
 
   (* Expose window.add(a, b) to JS. [req] is a JSON array of the arguments. *)
   Webview.bind w "add" (fun id req ->
-      Printf.printf "binding called: id=%s req=%s\n%!" id req;
+      Printf.printf "binding called <add>: id=%s req=%s\n%!" id req;
       let result =
         match Scanf.sscanf_opt req "[%d,%d]" (fun a b -> a + b) with
         | Some n -> string_of_int n
@@ -16,7 +16,7 @@ let () =
 
   (* Expose window.os_type() to JS. Returns the host OS as a JSON string. *)
   Webview.bind w "os_type" (fun id req ->
-      Printf.printf "binding called: id=%s req=%s\n%!" id req;
+      Printf.printf "binding called <os_type>: id=%s req=%s\n%!" id req;
       let result = Printf.sprintf "%S" (Utils.detect_os ()) in
       Webview.return w id ~error:false ~result);
 

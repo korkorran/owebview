@@ -1,11 +1,11 @@
 (executable
- (name hello)
- (public_name hello)
+ (name hellowv)
+ (public_name hellowv)
  (package owebview)
  (libraries webview unix))
 
 ; Install the web/ assets under <prefix>/share/owebview/web/ so an installed
-; binary can find them next to itself (see web_dir in hello.ml). The explicit
+; binary can find them next to itself (see web_dir in hellowv.ml). The explicit
 ; `as` paths preserve the web/ subdirectory and keep the files siblings, so
 ; the relative <link>/<script> references in index.html keep resolving.
 (install

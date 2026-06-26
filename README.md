@@ -15,7 +15,7 @@ OCaml binding for the [webview](https://github.com/webview/webview) library.
 | `lib/utils.ml` | Filesystem helpers (`Webview.Utils`) to locate assets |
 | `lib/dune` | Compiles the C++ stub and links the native libraries |
 | `lib/config/discover.ml` | Detects platform C++ flags at build time (dune-configurator) |
-| `examples/hello.ml` | Minimal window with two JS → OCaml bindings |
+| `examples/hellowv.ml` | Minimal window with two JS → OCaml bindings |
 | `examples/utils.ml` | Example-local helper (host OS detection) |
 | `examples/web/` | Page assets (`index.html` + `style.css` + `app.js`) |
 | `scripts/fetch-webview.sh` | Fetches a compatible `webview.h` into `vendor/` |
@@ -41,7 +41,7 @@ in order to make the two sensitive points explicit:
 
 ```sh
 # Build and run the example (works from any directory)
-dune exec examples/hello.exe
+dune exec examples/hellowv.exe
 ```
 
 The `webview.h` header is vendored in `vendor/`; run `./scripts/fetch-webview.sh`
@@ -75,7 +75,7 @@ dune build @install
 dune install --prefix /path/to/prefix owebview
 ```
 
-This installs the `hello` binary into `<prefix>/bin/` and the page assets into
+This installs the `hellowv` binary into `<prefix>/bin/` and the page assets into
 `<prefix>/share/owebview/web/`, keeping them discoverable at runtime.
 
 ## Ideas for going further

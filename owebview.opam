@@ -16,6 +16,7 @@ bug-reports: "https://github.com/korkorran/owebview/issues"
 depends: [
   "dune" {>= "3.0"}
   "ocaml" {>= "4.08"}
+  "dune-configurator" {>= "3.0" & build}
   "odoc" {with-doc}
 ]
 build: [

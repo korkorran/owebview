@@ -31,3 +31,6 @@ external _return : t -> string -> int -> string -> unit
 let create ?(debug = false) () = _create debug
 let set_size w ~width ~height hint = _set_size w width height hint
 let return w id ~error ~result = _return w id (if error then 1 else 0) result
+
+(* Re-export the filesystem helpers as [Webview.Utils]. *)
+module Utils = Utils

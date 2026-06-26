@@ -53,3 +53,17 @@ val bind : t -> string -> (string -> string -> unit) -> unit
 (** [return w id ~error ~result] resolves (or rejects, if [error]) the JS
     promise associated with the call [id]. [result] must be a JSON value. *)
 val return : t -> string -> error:bool -> result:string -> unit
+
+(** Filesystem helpers for locating on-disk assets (HTML/CSS/JS) relative to
+    the running executable, independently of the current working directory. *)
+module Utils : sig
+  (** Absolute path to the directory containing the running executable. *)
+  val exe_dir : unit -> string
+
+  (** Directory to resolve on-disk assets against. When launched via
+      [dune exec], the executable lives under [_build/<context>/], where the
+      source assets are not copied; this maps such a path back to the matching
+      source directory. From an installed location the executable directory is
+      used as-is. *)
+  val asset_dir : unit -> string
+end

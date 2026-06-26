@@ -19,11 +19,11 @@ let () =
       let result = Printf.sprintf "%S" (Utils.detect_os ()) in
       Webview.return w id ~error:false ~result);
 
-  (* Load the page from on-disk files (examples/web/) instead of an inline
-     HTML string. The CSS and JS referenced with relative paths in index.html
-     are resolved relative to that file. Run from the repo root so the path
-     below resolves (e.g. `dune exec examples/hello.exe`). *)
-  let index = Filename.concat (Sys.getcwd ()) "examples/web/index.html" in
+  (* Load the page from on-disk files (web/) instead of an inline HTML string.
+     The CSS and JS referenced with relative paths in index.html are resolved
+     relative to that file. The path is derived from the executable location
+     (see Webview.Utils.asset_dir), so the example runs from any directory. *)
+  let index = Filename.concat (Webview.Utils.asset_dir ()) "web/index.html" in
   Webview.navigate w ("file://" ^ index);
 
   Webview.run w;

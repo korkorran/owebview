@@ -2,11 +2,15 @@ type t
 (* Runtime representation is a nativeint holding the C [webview_t] pointer.
    It is abstract in the .mli so callers cannot do arithmetic on it. *)
 
-type hint =
-  | Hint_none
-  | Hint_min
-  | Hint_max
-  | Hint_fixed
+type hint = Hint_none | Hint_min | Hint_max | Hint_fixed
+
+(** This function is not required, as the enum representation is an int, but
+    will ensure safety in case of reodering *)
+let int_of_hint = function
+  | Hint_none -> 0
+  | Hint_min -> 1
+  | Hint_max -> 2
+  | Hint_fixed -> 3
 
 (* The constant constructors above map to 0,1,2,3 at runtime, which matches
    WEBVIEW_HINT_NONE/MIN/MAX/FIXED, so they can be passed straight to C. *)
@@ -16,7 +20,7 @@ external destroy : t -> unit = "ocaml_webview_destroy"
 external run : t -> unit = "ocaml_webview_run"
 external terminate : t -> unit = "ocaml_webview_terminate"
 external set_title : t -> string -> unit = "ocaml_webview_set_title"
-external _set_size : t -> int -> int -> hint -> unit = "ocaml_webview_set_size"
+external _set_size : t -> int -> int -> int -> unit = "ocaml_webview_set_size"
 external navigate : t -> string -> unit = "ocaml_webview_navigate"
 external set_html : t -> string -> unit = "ocaml_webview_set_html"
 external init : t -> string -> unit = "ocaml_webview_init"
@@ -25,11 +29,10 @@ external eval : t -> string -> unit = "ocaml_webview_eval"
 external bind : t -> string -> (string -> string -> unit) -> unit
   = "ocaml_webview_bind"
 
-external _return : t -> string -> int -> string -> unit
-  = "ocaml_webview_return"
+external _return : t -> string -> int -> string -> unit = "ocaml_webview_return"
 
 let create ?(debug = false) () = _create debug
-let set_size w ~width ~height hint = _set_size w width height hint
+let set_size w ~width ~height hint = _set_size w width height (int_of_hint hint)
 let return w id ~error ~result = _return w id (if error then 1 else 0) result
 
 (* Re-export the filesystem helpers as [Webview.Utils]. *)

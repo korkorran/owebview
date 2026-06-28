@@ -74,8 +74,23 @@ CAMLprim value ocaml_webview_set_title(value vw, value vtitle) {
 CAMLprim value ocaml_webview_set_size(value vw, value vwidth, value vheight,
                                       value vhint) {
   CAMLparam4(vw, vwidth, vheight, vhint);
+  webview_hint_t view_hint;
+  switch (Int_val(vhint)) {
+    case 1:
+      view_hint = WEBVIEW_HINT_MIN;
+      break;
+    case 2:
+      view_hint = WEBVIEW_HINT_MAX;
+      break;
+    case 3:
+      view_hint = WEBVIEW_HINT_FIXED;
+      break;
+    default:
+      view_hint = WEBVIEW_HINT_NONE;
+      break;
+  }
   webview_set_size(wv_of_val(vw), Int_val(vwidth), Int_val(vheight),
-                   Int_val(vhint));
+                   view_hint);
   CAMLreturn(Val_unit);
 }
 

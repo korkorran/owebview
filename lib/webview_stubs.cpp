@@ -1,9 +1,10 @@
 /* OCaml C stubs for the webview library.
  *
  * Build assumptions:
- *  - vendor/webview.h is the classic single-header webview (~0.10/0.11),
- *    which provides the C API *and* the implementation when included in a
- *    translation unit without WEBVIEW_HEADER defined.
+ *  - vendor/webview.h is the single-header webview (0.12), which provides the
+ *    C API *and* the implementation when included in a translation unit
+ *    without WEBVIEW_HEADER defined. The 0.12 C API returns webview_error_t;
+ *    these stubs currently ignore the returned error codes.
  *  - On macOS the backend uses the Objective-C runtime C API, so this
  *    compiles as plain C++ (no .mm needed) but must link WebKit/Cocoa/objc.
  */

@@ -67,8 +67,9 @@ The asset directory is resolved relative to the executable, so the example runs
 from any working directory:
 
 - **Dev** (`dune exec`): the files are read from the source tree.
-- **Installed**: the assets are installed under `<prefix>/share/owebview/web/`
-  and found next to the binary (`<prefix>/bin/` → `<prefix>/share/...`).
+- **Build tree**: `dune build` stages `web/` next to the binary (via the `all`
+  alias in `examples/dune`), so `_build/.../examples/` is a self-contained
+  bundle. The example is a dev artifact — it is **not** installed.
 
 ## Install
 
@@ -77,8 +78,9 @@ dune build @install
 dune install --prefix /path/to/prefix owebview
 ```
 
-This installs the `hellowv` binary into `<prefix>/bin/` and the page assets into
-`<prefix>/share/owebview/web/`, keeping them discoverable at runtime.
+This installs the **library** only. The `hellowv` example (its binary and its
+`web/` assets) is a development build and is intentionally not installed into
+the opam switch.
 
 ## Ideas for going further
 

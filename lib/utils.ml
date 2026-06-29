@@ -25,16 +25,13 @@ let asset_dir () =
 (* Locate the directory holding the web assets (index.html + style.css +
    app.js), independently of the current working directory.
 
-   - Installed layout: the binary lives in [<prefix>/bin/], and the assets are
-     installed under [<prefix>/share/owebview/web/] (see examples/dune).
-   - Dev layout (dune exec): the assets are read from the source tree, located
-     relative to the executable in dune's build tree (see Webview.Utils). *)
+   - Next to the binary: [dune build] stages [web/] alongside the executable
+     (see the [all] alias in examples/dune), so it is found at [exe_dir/web].
+   - Dev fallback ([dune exec], which does not build that alias): [web/] is
+     read from the source tree, located relative to the executable in dune's
+     build tree. *)
 let web_dir () =
   let has_index dir = Sys.file_exists (Filename.concat dir "index.html") in
-  let installed =
-    Filename.concat
-      (Filename.dirname (exe_dir ()))
-      (Filename.concat "share" (Filename.concat "owebview" "web"))
-  in
-  if has_index installed then installed
+  let beside_binary = Filename.concat (exe_dir ()) "web" in
+  if has_index beside_binary then beside_binary
   else Filename.concat (asset_dir ()) "web"

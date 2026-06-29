@@ -1,17 +1,12 @@
 (executable
  (name hellowv)
- (public_name hellowv)
- (package owebview)
  (libraries webview unix))
 
-; Install the web/ assets under <prefix>/share/owebview/web/ so an installed
-; binary can find them next to itself (see web_dir in hellowv.ml). The explicit
-; `as` paths preserve the web/ subdirectory and keep the files siblings, so
-; the relative <link>/<script> references in index.html keep resolving.
-(install
- (section share)
- (package owebview)
- (files
-  (web/index.html as web/index.html)
-  (web/style.css as web/style.css)
-  (web/app.js as web/app.js)))
+; Stage the web/ assets next to the built binary (_build/.../examples/web/) so
+; the example is self-contained in the build tree — without installing them
+; into the opam switch. The binary reads them from there, or from the source
+; tree when run via `dune exec`; see Webview.Utils.web_dir.
+(alias
+ (name all)
+ (deps
+  (glob_files web/*)))

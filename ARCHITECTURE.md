@@ -18,7 +18,7 @@ OCaml binding for the [webview](https://github.com/webview/webview) library.
 | `examples/hellowv.ml` | Minimal window with two JS → OCaml bindings |
 | `examples/utils.ml` | Example-local helper (host OS detection) |
 | `examples/web/` | Page assets (`index.html` + `style.css` + `app.js`) |
-| `scripts/fetch-webview.sh` | Fetches a compatible `webview.h` into `vendor/` |
+| `vendor/webview.h` | Vendored webview amalgamated single-header (0.12) |
 
 The implementation deliberately uses **manual C stubs** rather than `ctypes`,
 in order to make the two sensitive points explicit:
@@ -44,8 +44,10 @@ in order to make the two sensitive points explicit:
 dune exec examples/hellowv.exe
 ```
 
-The `webview.h` header is vendored in `vendor/`; run `./scripts/fetch-webview.sh`
-only to update it.
+The `webview.h` header is vendored in `vendor/` as webview's **amalgamated
+single-header**: the entire C API and its C++ implementation are inlined into
+one file, so there is nothing extra to fetch or build for webview itself (only
+the system web engine is linked — see below).
 
 The platform-specific C++ compile/link flags are detected automatically at
 build time by `lib/config/discover.ml` (dune-configurator): the WebKit/Cocoa

@@ -17,7 +17,6 @@
  ; Link flags (WebKit/Cocoa frameworks on macOS, GTK/WebKitGTK libs on Linux)
  ; are detected at build time too — see the rule below.
  (c_library_flags
-  -lstdc++
   (:include c_library_flags.sexp)))
 
 ; Generate the platform-specific flag files with dune-configurator.

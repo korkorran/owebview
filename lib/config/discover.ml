@@ -37,7 +37,9 @@ let () =
         | _ -> (
             (* Assume a Linux system with pkg-config + the -dev packages. *)
             match linux_flags c with
-            | Some (cflags, libs) -> (std_flags @ cflags, libs)
+            (* -lstdc++ links the GNU C++ runtime needed by the stub; on macOS
+               this role is played by -lc++ in macos_link_flags. *)
+            | Some (cflags, libs) -> (std_flags @ cflags, "-lstdc++" :: libs)
             | None ->
                 C.die
                   "could not detect the webview native dependencies via \

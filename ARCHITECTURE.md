@@ -86,4 +86,3 @@ the opam switch.
 
 - Integrate `yojson` to cleanly (de)serialize `req`/`result`.
 - Implement `unbind` + free the `ocaml_binding` (map `name -> cell`).
-- Migrate to the recent webview API (`webview_error_t` error codes).

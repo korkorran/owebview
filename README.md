@@ -89,9 +89,9 @@ webview uses the system web engine, so you need its native libraries:
 The platform-specific compile/link flags are detected automatically at build
 time (via `pkg-config` on Linux), so there's nothing to tweak by hand.
 
-> ⚠️ This is a compact binding: it covers the main webview API, with `dispatch`
-> (scheduling work on the UI thread) as the notable remaining gap. A great
-> starting point to build on.
+> This is a thin binding that covers the **full webview 0.12 C API**. It stays
+> low-level on purpose: higher-level conveniences (such as JSON (de)serializing
+> binding arguments) are left to you.
 
 ## Contributing
 

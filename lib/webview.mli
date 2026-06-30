@@ -55,6 +55,12 @@ val unbind : t -> string -> unit
 (** [unbind w name] removes the binding [name] created with {!bind}, releasing
     the closure's GC root. Raises [Failure] if no such binding exists. *)
 
+val dispatch : t -> (t -> unit) -> unit
+(** [dispatch w f] schedules [f] to run once on the UI thread (the thread
+    running {!run}), passing it the webview handle. This is the thread-safe way
+    to drive the webview from another thread: call e.g. {!eval} or
+    {!set_title} from inside [f]. Any exception raised by [f] is dropped. *)
+
 val return : t -> string -> error:bool -> result:string -> unit
 (** [return w id ~error ~result] resolves (or rejects, if [error]) the JS
     promise associated with the call [id]. [result] must be a JSON value. *)

@@ -2,8 +2,8 @@
 
 OCaml binding for the [webview](https://github.com/webview/webview) library.
 
-> ⚠️ A starting point, not a complete library. The main API is covered; the
-> notable gap is `dispatch` (scheduling work on the UI thread).
+> A thin binding that covers the full webview 0.12 C API. It stays low-level on
+> purpose — higher-level conveniences are left to the caller.
 
 ## Architecture
 
@@ -84,4 +84,3 @@ the opam switch.
 ## Ideas for going further
 
 - Integrate `yojson` to cleanly (de)serialize `req`/`result`.
-- Bind `webview_dispatch` to run OCaml code on the UI thread from another thread.

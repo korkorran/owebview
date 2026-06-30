@@ -311,4 +311,53 @@ CAMLprim value ocaml_webview_unbind(value vw, value vname) {
   CAMLreturn(Val_unit);
 }
 
+/* ---- dispatch ----
+ * webview_dispatch schedules a function to run once on the UI thread (the
+ * thread inside webview_run); it is the thread-safe way to drive the webview
+ * from another thread. The closure is one-shot: the trampoline frees its cell
+ * and unregisters its GC root right after invoking it.
+ */
+
+struct ocaml_dispatch {
+  value closure; /* registered global root */
+};
+
+static void dispatch_trampoline(webview_t w, void *arg) {
+  ocaml_dispatch *d = static_cast<ocaml_dispatch *>(arg);
+
+  /* Runs on the UI thread inside webview_run, where the runtime lock was
+   * released; re-acquire before touching any OCaml value or allocating. */
+  caml_acquire_runtime_system();
+
+  CAMLparam0();
+  CAMLlocal1(vw);
+  vw = val_of_wv(w);
+  /* caml_callback_exn (not caml_callback): swallow any exception, since there
+   * is no OCaml handler on the UI-thread C stack to receive a raise. */
+  caml_callback_exn(d->closure, vw);
+  caml_remove_generational_global_root(&d->closure);
+  std::free(d);
+
+  caml_release_runtime_system();
+  CAMLdrop;
+}
+
+CAMLprim value ocaml_webview_dispatch(value vw, value vclosure) {
+  CAMLparam2(vw, vclosure);
+  webview_t w = wv_of_val(vw);
+  ocaml_dispatch *d =
+      static_cast<ocaml_dispatch *>(std::malloc(sizeof(ocaml_dispatch)));
+  if (d == nullptr)
+    caml_failwith("out of memory in webview_dispatch");
+  d->closure = vclosure;
+  caml_register_generational_global_root(&d->closure);
+  webview_error_t err = webview_dispatch(w, dispatch_trampoline, d);
+  if (err != WEBVIEW_ERROR_OK) {
+    caml_remove_generational_global_root(&d->closure);
+    std::free(d);
+    wv_check("webview_dispatch", err); /* raises */
+  }
+  CAMLreturn(Val_unit);
+}
+
 } /* extern "C" */

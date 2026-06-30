@@ -53,6 +53,35 @@ val return : t -> string -> error:bool -> result:string -> unit
 (** [return w id ~error ~result] resolves (or rejects, if [error]) the JS
     promise associated with the call [id]. [result] must be a JSON value. *)
 
+(** The library's version information, as returned by {!version}. *)
+type version_info = {
+  major : int;
+  minor : int;
+  patch : int;
+  version_number : string;  (** SemVer ["MAJOR.MINOR.PATCH"] string *)
+  pre_release : string;  (** SemVer pre-release labels, or [""] *)
+  build_metadata : string;  (** SemVer build metadata, or [""] *)
+}
+
+val version : unit -> version_info
+(** The webview library's version information. *)
+
+(** The kind of native handle to retrieve with {!get_native_handle}, mirrors
+    [WEBVIEW_NATIVE_HANDLE_KIND_*]. *)
+type native_handle_kind =
+  | Ui_window  (** top-level window: [NSWindow]/[GtkWindow]/[HWND] *)
+  | Ui_widget  (** browser widget: [NSView]/[GtkWidget]/[HWND] *)
+  | Browser_controller
+      (** [WKWebView]/[WebKitWebView]/[ICoreWebView2Controller] *)
+
+val get_window : t -> nativeint
+(** [get_window w] returns the native top-level window handle as a pointer
+    ([0n] if unavailable). Interpret it with platform-specific FFI. *)
+
+val get_native_handle : t -> native_handle_kind -> nativeint
+(** [get_native_handle w kind] returns the requested native handle as a pointer
+    ([0n] if unavailable). *)
+
 (** Filesystem helpers for locating on-disk assets (HTML/CSS/JS) relative to the
     running executable, independently of the current working directory. *)
 module Utils : sig

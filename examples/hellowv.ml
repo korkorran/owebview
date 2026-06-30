@@ -1,8 +1,17 @@
 
 let () =
+  (* Library version info (no window needed). *)
+  let v = Webview.version () in
+  Printf.printf "using webview %s\n%!" v.Webview.version_number;
+
   let w = Webview.create ~debug:true () in
   Webview.set_title w "Hello from OCaml";
   Webview.set_size w ~width:480 ~height:320 Webview.Hint_none;
+
+  (* Native handles (opaque pointers, for platform-specific FFI such as a file
+     dialog). 0n means unavailable. *)
+  Printf.printf "native window handle = %nx\n%!" (Webview.get_window w);
+  ignore (Webview.get_native_handle w Webview.Browser_controller);
 
   (* Expose window.add(a, b) to JS. [req] is a JSON array of the arguments. *)
   Webview.bind w "add" (fun id req ->

@@ -88,6 +88,48 @@ CAMLprim value ocaml_webview_destroy(value vw) {
   CAMLreturn(Val_unit);
 }
 
+/* Returns the library version info as an OCaml record (a tag-0 block whose
+ * fields match Webview.version_info, in declaration order). */
+CAMLprim value ocaml_webview_version(value vunit) {
+  CAMLparam1(vunit);
+  CAMLlocal1(vinfo);
+  const webview_version_info_t *vi = webview_version();
+  vinfo = caml_alloc_tuple(6);
+  Store_field(vinfo, 0, Val_int(vi->version.major));
+  Store_field(vinfo, 1, Val_int(vi->version.minor));
+  Store_field(vinfo, 2, Val_int(vi->version.patch));
+  Store_field(vinfo, 3, caml_copy_string(vi->version_number));
+  Store_field(vinfo, 4, caml_copy_string(vi->pre_release));
+  Store_field(vinfo, 5, caml_copy_string(vi->build_metadata));
+  CAMLreturn(vinfo);
+}
+
+/* Native handles are returned as nativeint pointers (0n if unavailable); the
+ * caller interprets them with platform-specific FFI. */
+CAMLprim value ocaml_webview_get_window(value vw) {
+  CAMLparam1(vw);
+  void *h = webview_get_window(wv_of_val(vw));
+  CAMLreturn(caml_copy_nativeint(reinterpret_cast<intnat>(h)));
+}
+
+CAMLprim value ocaml_webview_get_native_handle(value vw, value vkind) {
+  CAMLparam2(vw, vkind);
+  webview_native_handle_kind_t kind;
+  switch (Int_val(vkind)) {
+    case 1:
+      kind = WEBVIEW_NATIVE_HANDLE_KIND_UI_WIDGET;
+      break;
+    case 2:
+      kind = WEBVIEW_NATIVE_HANDLE_KIND_BROWSER_CONTROLLER;
+      break;
+    default:
+      kind = WEBVIEW_NATIVE_HANDLE_KIND_UI_WINDOW;
+      break;
+  }
+  void *h = webview_get_native_handle(wv_of_val(vw), kind);
+  CAMLreturn(caml_copy_nativeint(reinterpret_cast<intnat>(h)));
+}
+
 CAMLprim value ocaml_webview_run(value vw) {
   CAMLparam1(vw);
   webview_t w = wv_of_val(vw);

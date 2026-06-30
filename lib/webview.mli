@@ -47,7 +47,13 @@ val bind : t -> string -> (string -> string -> unit) -> unit
     into [f id req], where [req] is a JSON array string of the JS arguments. The
     callback must eventually answer with {!return} (using [id]).
 
-    The closure is kept alive as a GC root for the lifetime of the process. *)
+    The closure is kept alive as a GC root until the binding is removed with
+    {!unbind} or the webview is {!destroy}ed. Raises [Failure] if a binding
+    with the same [name] already exists. *)
+
+val unbind : t -> string -> unit
+(** [unbind w name] removes the binding [name] created with {!bind}, releasing
+    the closure's GC root. Raises [Failure] if no such binding exists. *)
 
 val return : t -> string -> error:bool -> result:string -> unit
 (** [return w id ~error ~result] resolves (or rejects, if [error]) the JS

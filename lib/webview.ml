@@ -49,6 +49,8 @@ external eval : t -> string -> unit = "ocaml_webview_eval"
 external bind : t -> string -> (string -> string -> unit) -> unit
   = "ocaml_webview_bind"
 
+external unbind : t -> string -> unit = "ocaml_webview_unbind"
+
 external _return : t -> string -> int -> string -> unit = "ocaml_webview_return"
 
 external version : unit -> version_info = "ocaml_webview_version"

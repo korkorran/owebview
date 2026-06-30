@@ -89,9 +89,9 @@ webview uses the system web engine, so you need its native libraries:
 The platform-specific compile/link flags are detected automatically at build
 time (via `pkg-config` on Linux), so there's nothing to tweak by hand.
 
-> ⚠️ This is a compact binding, not a full-featured library: things like
-> `unbind`, `dispatch` and binding memory management are intentionally left out.
-> It's a great starting point to build on.
+> ⚠️ This is a compact binding: it covers the main webview API, with `dispatch`
+> (scheduling work on the UI thread) as the notable remaining gap. A great
+> starting point to build on.
 
 ## Contributing
 

@@ -12,6 +12,9 @@
 #include <cstdint>
 #include <cstdio>
 #include <cstdlib>
+#include <map>
+#include <string>
+#include <utility>
 
 #define CAML_NAME_SPACE
 #include <caml/alloc.h>
@@ -71,6 +74,25 @@ static void wv_check(const char *op, webview_error_t err) {
   }
 }
 
+/* ---- binding bookkeeping ----
+ * Each binding boxes its OCaml closure in a heap cell registered as a GC root,
+ * and that cell is passed to webview as the user-data pointer. We track the
+ * cells by (webview, name) so that unbind/destroy can free the cell and
+ * unregister the root. The map is touched only by bind/unbind/destroy, which
+ * run with the OCaml runtime lock held, so no extra synchronization is needed.
+ */
+
+struct ocaml_binding {
+  value closure; /* registered global root */
+};
+
+static std::map<std::pair<webview_t, std::string>, ocaml_binding *> g_bindings;
+
+static void free_binding(ocaml_binding *b) {
+  caml_remove_generational_global_root(&b->closure);
+  std::free(b);
+}
+
 extern "C" {
 
 CAMLprim value ocaml_webview_create(value vdebug) {
@@ -84,7 +106,17 @@ CAMLprim value ocaml_webview_create(value vdebug) {
 
 CAMLprim value ocaml_webview_destroy(value vw) {
   CAMLparam1(vw);
-  wv_check("webview_destroy", webview_destroy(wv_of_val(vw)));
+  webview_t w = wv_of_val(vw);
+  wv_check("webview_destroy", webview_destroy(w));
+  /* The webview is gone; free any bindings still registered for it. */
+  for (auto it = g_bindings.begin(); it != g_bindings.end();) {
+    if (it->first.first == w) {
+      free_binding(it->second);
+      it = g_bindings.erase(it);
+    } else {
+      ++it;
+    }
+  }
   CAMLreturn(Val_unit);
 }
 
@@ -216,13 +248,9 @@ CAMLprim value ocaml_webview_return(value vw, value vid, value vstatus,
 }
 
 /* ---- binding callbacks ----
- * We box the OCaml closure in a heap cell registered as a GC root so it
- * survives moving collections, and pass that cell as the user-data pointer.
+ * The trampoline receives the heap cell (see "binding bookkeeping" above) as
+ * its user-data argument and dispatches to the boxed OCaml closure.
  */
-
-struct ocaml_binding {
-  value closure; /* registered global root */
-};
 
 static void binding_trampoline(const char *id, const char *req, void *arg) {
   ocaml_binding *b = static_cast<ocaml_binding *>(arg);
@@ -245,21 +273,40 @@ static void binding_trampoline(const char *id, const char *req, void *arg) {
 
 CAMLprim value ocaml_webview_bind(value vw, value vname, value vclosure) {
   CAMLparam3(vw, vname, vclosure);
+  webview_t w = wv_of_val(vw);
+
   ocaml_binding *b =
       static_cast<ocaml_binding *>(std::malloc(sizeof(ocaml_binding)));
   if (b == nullptr)
     caml_failwith("out of memory in webview_bind");
   b->closure = vclosure;
   caml_register_generational_global_root(&b->closure);
-  /* NOTE: on success this skeleton never frees [b] nor unregisters the root.
-   * For real use, keep a map name -> ocaml_binding* and clean up in an unbind
-   * wrapper. On failure below we do clean up before raising. */
+
   webview_error_t err =
-      webview_bind(wv_of_val(vw), String_val(vname), binding_trampoline, b);
+      webview_bind(w, String_val(vname), binding_trampoline, b);
   if (err != WEBVIEW_ERROR_OK) {
-    caml_remove_generational_global_root(&b->closure);
-    std::free(b);
-    wv_check("webview_bind", err); /* raises */
+    free_binding(b);
+    wv_check("webview_bind", err); /* raises (e.g. duplicate name) */
+  }
+  /* Track for unbind/destroy. Build the std::string key only here, past any
+   * point where wv_check could longjmp over its destructor. */
+  g_bindings[std::make_pair(w, std::string(String_val(vname)))] = b;
+  CAMLreturn(Val_unit);
+}
+
+CAMLprim value ocaml_webview_unbind(value vw, value vname) {
+  CAMLparam2(vw, vname);
+  webview_t w = wv_of_val(vw);
+
+  /* Pass the name as a C string: no C++ object is alive when wv_check may
+   * longjmp on a non-OK status (e.g. WEBVIEW_ERROR_NOT_FOUND). */
+  wv_check("webview_unbind", webview_unbind(w, String_val(vname)));
+
+  /* Removed on the C side; free our tracking cell and unregister the root. */
+  auto it = g_bindings.find(std::make_pair(w, std::string(String_val(vname))));
+  if (it != g_bindings.end()) {
+    free_binding(it->second);
+    g_bindings.erase(it);
   }
   CAMLreturn(Val_unit);
 }

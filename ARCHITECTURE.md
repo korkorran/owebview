@@ -2,8 +2,8 @@
 
 OCaml binding for the [webview](https://github.com/webview/webview) library.
 
-> ⚠️ A starting point, not a complete library. Intentionally missing: `unbind`,
-> `dispatch`, and binding memory management.
+> ⚠️ A starting point, not a complete library. The main API is covered; the
+> notable gap is `dispatch` (scheduling work on the UI thread).
 
 ## Architecture
 
@@ -84,4 +84,4 @@ the opam switch.
 ## Ideas for going further
 
 - Integrate `yojson` to cleanly (de)serialize `req`/`result`.
-- Implement `unbind` + free the `ocaml_binding` (map `name -> cell`).
+- Bind `webview_dispatch` to run OCaml code on the UI thread from another thread.

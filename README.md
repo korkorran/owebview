@@ -30,13 +30,13 @@ Clone the repo and launch the bundled example, `hellowv`:
 ```sh
 git clone https://github.com/korkorran/owebview.git
 cd owebview
-dune exec examples/hellowv.exe
+dune exec examples/hellowv/hellowv.exe
 ```
 
 A window pops up with two buttons wired to OCaml: one adds two numbers, the other
 reports your OS. The example loads its UI from real `.html` / `.css` / `.js`
-files in [`examples/web/`](examples/web/) — peek at
-[`examples/hellowv.ml`](examples/hellowv.ml) to see how JavaScript calls back
+files in [`examples/hellowv/web/`](examples/hellowv/web/) — peek at
+[`examples/hellowv/hellowv.ml`](examples/hellowv/hellowv.ml) to see how JavaScript calls back
 into OCaml.
 
 ## Use it in your own project

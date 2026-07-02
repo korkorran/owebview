@@ -14,9 +14,9 @@ OCaml binding for the [webview](https://github.com/webview/webview) library.
 | `lib/utils.ml` | Filesystem helpers (`Webview.Utils`) to locate assets |
 | `lib/dune` | Compiles the C++ stub and links the native libraries |
 | `lib/config/discover.ml` | Detects platform C++ flags at build time (dune-configurator) |
-| `examples/hellowv.ml` | Minimal window with two JS → OCaml bindings |
-| `examples/utils.ml` | Example-local helper (host OS detection) |
-| `examples/web/` | Page assets (`index.html` + `style.css` + `app.js`) |
+| `examples/hellowv/hellowv.ml` | Minimal window with two JS → OCaml bindings |
+| `examples/hellowv/utils.ml` | Example-local helper (host OS detection) |
+| `examples/hellowv/web/` | Page assets (`index.html` + `style.css` + `app.js`) |
 | `vendor/webview.h` | Vendored webview amalgamated single-header (0.12) |
 
 The implementation deliberately uses **manual C stubs** rather than `ctypes`,
@@ -40,7 +40,7 @@ in order to make the two sensitive points explicit:
 
 ```sh
 # Build and run the example (works from any directory)
-dune exec examples/hellowv.exe
+dune exec examples/hellowv/hellowv.exe
 ```
 
 The `webview.h` header is vendored in `vendor/` as webview's **amalgamated
@@ -58,7 +58,7 @@ package's opam `depexts`).
 ## Page assets
 
 The example does not inline its HTML in OCaml: it loads the files in
-`examples/web/` (`index.html`, which references `style.css` and `app.js`) via
+`examples/hellowv/web/` (`index.html`, which references `style.css` and `app.js`) via
 `Webview.navigate` with a `file://` URL. The OCaml bindings (`add`, `os_type`)
 stay reachable from JS as `window.<name>(...)`.
 

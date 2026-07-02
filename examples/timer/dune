@@ -1,6 +1,6 @@
 (executable
  (name timer)
- (libraries webview))
+ (libraries webview threads.posix))
 
 ; Stage the web/ assets next to the built binary (_build/.../examples/timer/web/)
 ; so the example is self-contained in the build tree, without installing them

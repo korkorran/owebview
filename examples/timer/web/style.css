@@ -29,3 +29,8 @@ body {
   letter-spacing: 0.15em;
   font-size: 0.8rem;
 }
+
+/* Dim the number while the timer is paused (toggled from app.js). */
+body.paused #elapsed {
+  opacity: 0.35;
+}

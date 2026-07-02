@@ -1,15 +1,40 @@
-// Count the seconds elapsed since the page (window) was launched. Everything
-// happens in the browser — no OCaml binding is involved.
+// Seconds counter with pause/resume. start() and stop() are exposed on window
+// so the OCaml side can call them via Webview.eval (see timer.ml) — no binding
+// is involved. Elapsed time is always derived from the accumulated run time,
+// so it never drifts and it resumes where it was paused.
 
-const start = Date.now();
-const elapsed = document.getElementById("elapsed");
+const elapsedEl = document.getElementById("elapsed");
 
-function tick() {
-  const seconds = Math.floor((Date.now() - start) / 1000);
-  elapsed.textContent = seconds;
+let running = true;
+let segmentStart = Date.now(); // when the current running segment began
+let accumulatedMs = 0; // time already counted during previous segments
+
+function currentMs() {
+  return accumulatedMs + (running ? Date.now() - segmentStart : 0);
 }
 
-tick();
-// Update a few times per second so the display flips promptly on each new
-// second, while the value itself is always derived from the start time.
-setInterval(tick, 200);
+function render() {
+  elapsedEl.textContent = Math.floor(currentMs() / 1000);
+  document.body.classList.toggle("paused", !running);
+}
+
+function stop() {
+  if (!running) return;
+  accumulatedMs += Date.now() - segmentStart;
+  running = false;
+  render();
+}
+
+function start() {
+  if (running) return;
+  segmentStart = Date.now();
+  running = true;
+  render();
+}
+
+// Expose to the OCaml side (called through Webview.eval).
+window.start = start;
+window.stop = stop;
+
+render();
+setInterval(render, 200);

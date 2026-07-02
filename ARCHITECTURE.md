@@ -17,6 +17,7 @@ OCaml binding for the [webview](https://github.com/webview/webview) library.
 | `examples/hellowv/hellowv.ml` | Minimal window with two JS → OCaml bindings |
 | `examples/hellowv/utils.ml` | Example-local helper (host OS detection) |
 | `examples/hellowv/web/` | Page assets (`index.html` + `style.css` + `app.js`) |
+| `examples/timer/` | Seconds counter, pure HTML/CSS/JS (no bindings) |
 | `vendor/webview.h` | Vendored webview amalgamated single-header (0.12) |
 
 The implementation deliberately uses **manual C stubs** rather than `ctypes`,

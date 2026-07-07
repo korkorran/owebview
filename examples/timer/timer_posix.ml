@@ -1,16 +1,25 @@
 let () =
   let w = Webview.create () in
-  Webview.set_title w "Timer";
+  Webview.set_title w "Timer (Posix)";
   Webview.set_size w ~width:320 ~height:220 Webview.Hint_none;
 
   (* Expose window.print_time(seconds): the page's button calls it and we print
      the elapsed time on the main process's console (stdout). [req] is a JSON
      array of the JS arguments, e.g. "[42]". *)
   Webview.bind w "print_time" (fun id req ->
-      (match Scanf.sscanf_opt req "[%d]" (fun n -> n) with
-      | Some seconds -> Printf.printf "elapsed time: %d s\n%!" seconds
-      | None -> Printf.printf "print_time: unexpected request %s\n%!" req);
-      Webview.return w id ~error:false ~result:"null");
+      (* Wait 2 s before printing. The callback runs on the UI thread, so the
+         wait is delegated to a background thread to avoid freezing the window
+         (a blocking sleep here would stall the webview event loop). *)
+      ignore
+        (Thread.create
+           (fun () ->
+             Thread.delay 2.0;
+             (match Scanf.sscanf_opt req "[%d]" (fun n -> n) with
+             | Some seconds -> Printf.printf "elapsed time: %d s\n%!" seconds
+             | None ->
+                 Printf.printf "print_time: unexpected request %s\n%!" req);
+             Webview.return w id ~error:false ~result:"null")
+           ()));
 
   (* The timer itself lives in the page (HTML/CSS/JS). The web/ directory is
      located relative to the executable. *)

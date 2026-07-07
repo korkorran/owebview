@@ -1,0 +1,101 @@
+:root {
+  color-scheme: light dark;
+}
+
+/* Palette roles (validated data-viz palette, light + dark). */
+.viz-root {
+  --surface-1: #fcfcfb;
+  --page: #f9f9f7;
+  --text-primary: #0b0b0b;
+  --text-secondary: #52514e;
+  --muted: #898781;
+  --grid: #e1e0d9;
+  --baseline: #c3c2b7;
+  --series-1: #2a78d6;
+}
+@media (prefers-color-scheme: dark) {
+  .viz-root {
+    --surface-1: #1a1a19;
+    --page: #0d0d0d;
+    --text-primary: #ffffff;
+    --text-secondary: #c3c2b7;
+    --muted: #898781;
+    --grid: #2c2c2a;
+    --baseline: #383835;
+    --series-1: #3987e5;
+  }
+}
+
+html,
+body {
+  margin: 0;
+  height: 100%;
+}
+body {
+  background: var(--page, #f9f9f7);
+  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+
+.viz-root {
+  min-height: 100vh;
+  box-sizing: border-box;
+  padding: 20px 22px;
+  background: var(--surface-1);
+  color: var(--text-primary);
+}
+
+.chart-title {
+  margin: 0 0 12px;
+  font-size: 1rem;
+  font-weight: 600;
+}
+.chart-title span {
+  color: var(--text-secondary);
+  font-weight: 400;
+}
+
+/* Data marks (single series → one hue, no legend). */
+.bar {
+  fill: var(--series-1);
+}
+.bar:hover {
+  opacity: 0.82;
+}
+
+/* Recessive chrome. */
+.grid line {
+  stroke: var(--grid);
+  shape-rendering: crispEdges;
+}
+.grid path {
+  stroke: none;
+}
+.axis path,
+.axis .tick line {
+  stroke: var(--baseline);
+  shape-rendering: crispEdges;
+}
+.axis text {
+  fill: var(--muted);
+  font-size: 12px;
+}
+.axis-y text {
+  font-variant-numeric: tabular-nums;
+}
+
+.tooltip {
+  position: fixed;
+  pointer-events: none;
+  padding: 6px 9px;
+  border-radius: 6px;
+  background: var(--text-primary);
+  color: var(--surface-1);
+  font-size: 12px;
+  line-height: 1.3;
+  white-space: nowrap;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+  transform: translate(-50%, -120%);
+}
+.tooltip b {
+  font-variant-numeric: tabular-nums;
+}

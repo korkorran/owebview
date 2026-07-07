@@ -36,5 +36,11 @@ function start() {
 window.start = start;
 window.stop = stop;
 
+// "print time in console" button: call the OCaml binding print_time(seconds),
+// which writes the elapsed time to the main process's console.
+document.getElementById("print").addEventListener("click", () => {
+  print_time(Math.floor(currentMs() / 1000));
+});
+
 render();
 setInterval(render, 200);

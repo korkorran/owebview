@@ -34,3 +34,10 @@ body {
 body.paused #elapsed {
   opacity: 0.35;
 }
+
+button {
+  margin-top: 1.5rem;
+  padding: 0.45rem 0.9rem;
+  font-size: 0.9rem;
+  cursor: pointer;
+}

@@ -3,8 +3,17 @@ let () =
   Webview.set_title w "Timer";
   Webview.set_size w ~width:320 ~height:220 Webview.Hint_none;
 
-  (* The timer itself lives in the page (HTML/CSS/JS); no binding is needed.
-     The web/ directory is located relative to the executable. *)
+  (* Expose window.print_time(seconds): the page's button calls it and we print
+     the elapsed time on the main process's console (stdout). [req] is a JSON
+     array of the JS arguments, e.g. "[42]". *)
+  Webview.bind w "print_time" (fun id req ->
+      (match Scanf.sscanf_opt req "[%d]" (fun n -> n) with
+      | Some seconds -> Printf.printf "elapsed time: %d s\n%!" seconds
+      | None -> Printf.printf "print_time: unexpected request %s\n%!" req);
+      Webview.return w id ~error:false ~result:"null");
+
+  (* The timer itself lives in the page (HTML/CSS/JS). The web/ directory is
+     located relative to the executable. *)
   let index = Filename.concat (Webview.Utils.web_dir ()) "index.html" in
   Webview.navigate w ("file://" ^ index);
 

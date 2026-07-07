@@ -14,7 +14,8 @@ function currentMs() {
 }
 
 function render() {
-  elapsedEl.textContent = Math.floor(currentMs() / 1000);
+  // Two decimals = hundredths of a second (e.g. "12.34").
+  elapsedEl.textContent = (currentMs() / 1000).toFixed(2);
   document.body.classList.toggle("paused", !running);
 }
 
@@ -42,5 +43,9 @@ document.getElementById("print").addEventListener("click", () => {
   print_time(Math.floor(currentMs() / 1000));
 });
 
-render();
-setInterval(render, 200);
+// Refresh every animation frame so the hundredths tick smoothly.
+function loop() {
+  render();
+  requestAnimationFrame(loop);
+}
+loop();

@@ -43,6 +43,9 @@ let () =
   (* window.print_time(seconds): its Lwt handler runs on the Lwt thread. It must
      still answer the JS call with [return] (safe from another thread). *)
   lwt_bind w "print_time" (fun id req ->
+      (* Wait 2 s before printing. On the Lwt thread this is a cooperative,
+         non-blocking sleep, so nothing is frozen while we wait. *)
+      let* () = Lwt_unix.sleep 2.0 in
       (match Scanf.sscanf_opt req "[%d]" (fun n -> n) with
       | Some seconds -> Printf.printf "elapsed time: %d s\n%!" seconds
       | None -> Printf.printf "print_time: unexpected request %s\n%!" req);

@@ -1,5 +1,5 @@
 (executable
- (name timer)
+ (name timer_posix)
  (libraries webview threads.posix))
 
 ; Stage the web/ assets next to the built binary (_build/.../examples/timer/web/)

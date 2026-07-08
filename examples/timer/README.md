@@ -82,4 +82,4 @@ These functions are safe to call from a thread other than the webview loop:
 - `Webview.dispatch`
 
 A complete, working example is
-[`examples/timer/timer_lwt.ml`](examples/timer/timer_lwt.ml).
+[`examples/timer/timer_lwt.ml`](timer_lwt.ml).

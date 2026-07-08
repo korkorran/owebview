@@ -15,9 +15,11 @@ let () =
            (fun () ->
              Thread.delay 2.0;
              (match Scanf.sscanf_opt req "[%d]" (fun n -> n) with
-             | Some seconds -> Printf.printf "elapsed time: %d s\n%!" seconds
-             | None ->
-                 Printf.printf "print_time: unexpected request %s\n%!" req);
+             | Some seconds ->
+                 Printf.printf "[Thread %d] elapsed time: %d s\n%!"
+                   (Thread.id (Thread.self ()))
+                   seconds
+             | None -> Printf.printf "print_time: unexpected request %s\n%!" req);
              Webview.return w id ~error:false ~result:"null")
            ()));
 
@@ -30,7 +32,9 @@ let () =
      timer. Reading stdin happens on a background thread, so we must NOT call
      the webview directly from there — [dispatch] runs the JS call on the UI
      thread, which is the whole point of this example. *)
-  print_endline "Press <Enter> in this terminal to pause/resume the timer.";
+  Printf.printf
+    "[Thread %d] Press <Enter> in this terminal to pause/resume the timer.\n%!"
+    (Thread.id (Thread.self ()));
   let running = ref true in
   let _ =
     Thread.create
@@ -41,7 +45,8 @@ let () =
             (* [input_line] blocks until <Enter>; [dispatch] fires here. *)
             let cmd = if !running then "stop()" else "start()" in
             running := not !running;
-            Printf.printf "timer %s\n%!"
+            Printf.printf "[Thread %d] timer %s\n%!"
+              (Thread.id (Thread.self ()))
               (if !running then "resumed" else "paused");
             Webview.dispatch w (fun w -> Webview.eval w cmd)
           done

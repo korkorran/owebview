@@ -28,7 +28,9 @@ let terminal_loop w =
         let cmd = if !running then "stop()" else "start()" in
         running := not !running;
         let* () =
-          Lwt_io.printlf "timer %s" (if !running then "resumed" else "paused")
+          Lwt_io.printlf "[Thread %d] timer %s"
+            (Thread.id (Thread.self ()))
+            (if !running then "resumed" else "paused")
         in
         Webview.dispatch w (fun w -> Webview.eval w cmd);
         loop ()
@@ -47,7 +49,10 @@ let () =
          non-blocking sleep, so nothing is frozen while we wait. *)
       let* () = Lwt_unix.sleep 2.0 in
       (match Scanf.sscanf_opt req "[%d]" (fun n -> n) with
-      | Some seconds -> Printf.printf "elapsed time: %d s\n%!" seconds
+      | Some seconds ->
+          Printf.printf "[Thread %d] elapsed time: %d s\n%!"
+            (Thread.id (Thread.self ()))
+            seconds
       | None -> Printf.printf "print_time: unexpected request %s\n%!" req);
       Webview.return w id ~error:false ~result:"null";
       Lwt.return_unit);
@@ -55,7 +60,9 @@ let () =
   let index = Filename.concat (Webview.Utils.web_dir ()) "index.html" in
   Webview.navigate w ("file://" ^ index);
 
-  Printf.printf "Press <Enter> in this terminal to pause/resume the timer.\n%!";
+  Printf.printf
+    "[Thread %d] Press <Enter> in this terminal to pause/resume the timer.\n%!"
+    (Thread.id (Thread.self ()));
   (* Lwt runs on its own thread; the webview keeps the main thread (Cocoa). *)
   let _ : Thread.t =
     Thread.create (fun () -> Lwt_main.run (terminal_loop w)) ()
